@@ -218,4 +218,4 @@ gaps inner 6
 smart_borders on
 smart_gaps off
 
-exec_always --no-startup-id "/home/parallels/launch_poly.sh"
+exec_always --no-startup-id "/home/parallels/conf/launch_poly.sh"
