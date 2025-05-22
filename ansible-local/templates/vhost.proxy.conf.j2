@@ -1,0 +1,11 @@
+<VirtualHost *:80>
+    ServerName {{ item.servername }}
+
+    ProxyPass / http://localhost:{{ item.port }}/
+    ProxyPassReverse / http://localhost:{{ item.port }}/
+
+    LogLevel warn
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ item.servername }}-error.log
+    CustomLog ${APACHE_LOG_DIR}/{{ item.servername }}-access-.log combined
+</VirtualHost>

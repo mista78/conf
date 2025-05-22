@@ -1,0 +1,25 @@
+#jinja2: trim_blocks:False
+<VirtualHost *:{{ item.port | default('80') }}>
+    ServerName {{ item.servername }}
+    DocumentRoot {{ item.documentroot }}
+    <Directory {{ item.documentroot}}>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    {{item.extra | default('') | indent(4)}}
+
+    <FilesMatch \.php$>
+      # For Apache version 2.4.10 and above, use SetHandler to run PHP as a fastCGI process server
+      SetHandler "proxy:unix:/run/php/php{{ item.version }}-fpm.sock|fcgi://localhost"
+    </FilesMatch>
+
+    ErrorLog ${APACHE_LOG_DIR}/{{ item.servername }}-error.log
+
+    # Possible values include: debug, info, notice, warn, error, crit,
+    # alert, emerg.
+    LogLevel warn
+
+    CustomLog ${APACHE_LOG_DIR}/{{ item.servername }}-access.log combined
+</VirtualHost>

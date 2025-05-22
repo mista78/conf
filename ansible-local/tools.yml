@@ -1,0 +1,28 @@
+- hosts: localhost
+  become: yes
+  vars:
+    packages:
+      - default-jre
+      - dos2unix
+      - htop
+      - goaccess
+      - imagemagick
+      - ksh
+      # ^ necessaire pour install driver DB2
+      - libtiff-tools
+      - libxml2-utils
+      # ^ fournit utilitaire de formattage xmllint
+      - litecli
+      - mycli
+      - ncdu
+      - openssh-server
+      - pdftk
+      - sqlitebrowser
+      - ttf-mscorefonts-installer
+      - unoconv
+      - xclip
+
+  tasks:
+    - name: Install {{ item }}
+      apt: name={{ item}} state=latest
+      with_items: "{{ packages }}"

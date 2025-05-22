@@ -1,0 +1,65 @@
+- hosts: localhost
+
+  tasks:
+    - include_vars: vars/custom.yml
+
+    - name: apt
+      become: yes
+      copy:
+        content: |
+          Acquire::http::Proxy "http://carmf.fr\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129";
+          Acquire::https::Proxy "http://carmf.fr\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129";
+        dest: /etc/apt/apt.conf
+
+    - name: curl
+      copy: 
+        content: proxy=http://carmf.fr\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+        dest: /home/{{ vm_user }}/.curlrc
+
+    - name: wget
+      become: yes
+      lineinfile:
+        dest: /etc/wgetrc
+        regexp: "^http_proxy=.*"
+        line: http_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+
+    - name: wget bis
+      become: yes
+      lineinfile:
+        dest: /etc/wgetrc
+        regexp: "^https_proxy=.*"
+        line: https_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+    
+    - name: .bash
+      become: yes
+      lineinfile:
+        dest: /home/{{ vm_user }}/.bashrc
+        regexp: "^export http_proxy=.*"
+        line: export http_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+
+    - name: .bash bis
+      become: yes
+      lineinfile:
+        dest: /home/{{ vm_user }}/.bashrc
+        regexp: "^export https_proxy=.*"
+        line: export https_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+
+    - name: zsh
+      lineinfile:
+        dest: /home/{{ vm_user }}/.config/zsh/zsh-exports
+        regexp: "^export http_proxy=.*"
+        line: export http_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+
+    - name: proxy
+      become: yes
+      lineinfile:
+        dest: /etc/profile.d/proxy.sh
+        regexp: "^export http_proxy=.*"
+        line: export http_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129
+
+    - name: proxy bis
+      become: yes
+      lineinfile:
+        dest: /etc/profile.d/proxy.sh
+        regexp: "^export https_proxy=.*"
+        line: export https_proxy=http://carmf.fr\\{{ proxy_user }}:{{ proxy_pwd }}@proxy2.carmf.fr:3129

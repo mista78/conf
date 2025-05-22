@@ -1,0 +1,38 @@
+<VirtualHost *:80>
+    ServerName {{ item.servername }}
+
+    DocumentRoot {{ item.documentroot }}
+
+    <Directory {{ item.documentroot}}>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride All
+        Require all granted
+    </Directory>
+
+    ErrorLog  /var/log/apache2/{{ item.servername }}-error.log
+    CustomLog /var/log/apache2/{{ item.servername }}-access.log combined
+
+    # Rewrites
+    RewriteEngine On
+
+    # HTML
+    RewriteCond %{REQUEST_URI} .html$ [or]
+    RewriteCond %{REQUEST_URI} =/
+    RewriteRule ^/(.*)          /usr/lib/munin/cgi/munin-cgi-html/$1 [L]
+
+    # Images
+    RewriteRule ^/munin-cgi/munin-cgi-graph/(.*) /usr/lib/munin/cgi/munin-cgi-graph/$1 [L]
+
+    # Ensure we can run (fast)cgi scripts
+    <Directory "/usr/lib/munin/cgi">
+        Options +ExecCGI
+        AllowOverride none
+        Require all granted
+        <IfModule mod_fcgid.c>
+            SetHandler fcgid-script
+        </IfModule>
+        <IfModule !mod_fcgid.c>
+            SetHandler cgi-script
+        </IfModule>
+    </Directory>
+</VirtualHost>

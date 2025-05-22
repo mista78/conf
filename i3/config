@@ -200,17 +200,17 @@ bindsym $mod+r mode "resize"
 #        status_command i3status
 #
 
-assign [class="jetbrains-idea|Code"]                    $ws1
-assign [class="kitty"]     $ws2
-assign [class="Google-chrome|Chromium|Vivaldi-stable|Opera|Firefox"]     $ws3
+# assign [class="jetbrains-idea|Code|kitty"]                    $ws1
+# #assign [class=""]     $ws2
+# assign [class="Google-chrome|Chromium|Vivaldi-stable|Opera|Firefox"]     $ws3
 
 bindsym $mod+c exec code -n
 bindsym $mod+Shift+e exec chromium
 
 # I3 Gaps
-for_window [class="^.*"] border pixel 2
+for_window [class="^.*"] border pixel 
 for_window [class=".*"] title_format "%title"
-for_window [class="Code|Google-chrome|Chromium"] layout tabbed
+# for_window [class="Code|Google-chrome|Chromium"] layout tabbed
 
 title_align center
 
@@ -218,4 +218,4 @@ gaps inner 6
 smart_borders on
 smart_gaps off
 
-exec_always --no-startup-id "/home/parallels/conf/launch_poly.sh"
+exec_always --no-startup-id "/home/$USERNAME/conf/launch_poly.sh"

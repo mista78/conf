@@ -1,0 +1,156 @@
+- hosts: localhost
+  become: yes
+  vars:
+    php_versions: [5.6, 7.3, 7.4, 8.2, 8.3, 8.4]
+    extensions:
+      - apcu
+      - mcrypt
+      - bcmath
+      - curl
+      - dev
+      - fpm
+      - gd
+      - gearman
+      - imap
+      - intl
+      - ldap
+      - mailparse
+      - mbstring
+      - mysql
+      - odbc
+      - pgsql
+      - pdo-sqlite
+      - pdo-pgsql
+      - soap
+      - zip
+      - xdebug
+      - xml
+      - xmlrpc
+      - xsl
+
+    # ⚠ ne pas oublier de décompresser l'archive extensions.zip à la racine de ce projet
+    custom_extensions:
+      - ibm_db2
+      - pdo_ibm
+      - vulcain
+    composer_json:
+      require:
+        "symfony/var-dumper": "^5.4"
+        "psy/psysh": "@stable"
+
+  tasks:
+    - include_vars: vars/custom.yml
+
+    - name: Installation install software-properties-common
+      apt: name=software-properties-common
+
+    - name: Installation PHP
+      apt: name=php{{item}} state=present
+      with_items: "{{php_versions}}"
+
+    # - name: Install extensions
+    #   apt:
+    #     state: present
+    #     update_cache: yes
+    #     pkg: "php{{item[0]}}-{{item[1]}}"
+    #   with_nested: 
+    #     - "{{php_versions}}"
+    #     - "{{extensions}}"
+    #   notify:
+    #     - restart fpm
+
+        #    - name: "Composer Global Packages"
+        #      become: no
+        #      template:
+        #        src: composer.j2
+        #        dest: /home/{{ vm_user }}/.config/composer/composer.json
+        #
+        #    - name: "Composer Global Install"
+        #      become: no
+        #      shell: |
+        #        update-alternatives --set php /usr/bin/php7.3
+        #        composer global install --no-interaction --no-ansi
+
+    - name: "Conf PHP"
+      lineinfile:
+        dest: "/etc/php/{{item[0]}}/{{item[1]}}/php.ini"
+        regexp: "{{item[2].regexp}}"
+        line: "{{item[2].line}}"
+        state: present
+      with_nested:
+        - "{{php_versions}}"
+        - ["cli", "fpm"]
+        - [
+            { regexp: "^error_reporting =", line: "error_reporting = E_ALL" },
+            { regexp: "^log_errors =", line: "log_errors = On" },
+            { regexp: "^log_errors_max_len =", line: "log_errors_max_len = 0" },
+            { regexp: "^display_errors =", line: "display_errors = On" },
+            {
+              regexp: "^display_startup_errors =",
+              line: "display_startup_errors = On",
+            },
+            {
+              regexp: "^upload_max_filesize =",
+              line: "upload_max_filesize = 2000M",
+            },
+            { regexp: "^post_max_size =", line: "post_max_size = 2000M" },
+            { regexp: "^;?error_log =", line: "error_log = /var/log/php_errors.log" },
+            {
+              regexp: "^sendmail_path =",
+              line: "sendmail_path = /usr/local/bin/mhsendmail",
+            },
+            {
+              regexp: "^zend.assertions =",
+              line: "zend.assertions = 1",
+            },
+            {
+              regexp: "^;date.timezone =",
+              line: "date.timezone = Europe/Paris",
+            },
+            {
+              regexp: "^memory_limit =",
+              line: "memory_limit = -1",
+            },
+          ]
+      notify:
+        - restart fpm
+
+    # prepend sauf pour versions trop anciennes
+    - name: "Conf PHP (except 5.6, 7.0)"
+      lineinfile:
+        dest: "/etc/php/{{item[0]}}/{{item[1]}}/php.ini"
+        regexp: "{{item[2].regexp}}"
+        line: "{{item[2].line}}"
+        state: present
+      with_nested:
+        - [7.3, 7.4, 8.2, 8.3,8.4]
+        - ["cli", "fpm"]
+        - [
+            {
+              regexp: "^auto_prepend_file =",
+              line: "auto_prepend_file = /home/{{ apache_run_user }}/.config/composer/vendor/autoload.php",
+            },
+          ]
+      notify:
+        - restart fpm
+
+    - name: "Conf xdebug"
+      lineinfile:
+        dest: "/etc/php/{{item[0]}}/mods-available/xdebug.ini"
+        regexp: "{{item[1].regexp}}"
+        line: "{{item[1].line}}"
+        state: present
+      with_nested:
+        - "{{php_versions}}"
+        - [
+            {
+              regexp: "^xdebug.mode=",
+              line: "xdebug.mode=debug,develop"
+            }
+          ]
+      notify:
+        - restart fpm
+  handlers:
+    - name: restart fpm
+      service: name=php{{item}}-fpm state=restarted
+      with_items: "{{php_versions}}"

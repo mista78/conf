@@ -1,4 +1,4 @@
-echo "%%%%%%%" | sudo -S echo "password"
+echo "kmaoulida" | sudo -S echo "password"
 sudo update-alternatives --set php /usr/bin/php$1
 dirname=$(dirname $0)
 cp $dirname/installer $dirname/composer-setup.php

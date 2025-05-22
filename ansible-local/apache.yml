@@ -1,0 +1,144 @@
+- hosts: localhost
+  become: yes
+  vars:
+    apache_run_user: parallels
+    apache_run_group: parallels
+    modules:
+      - headers
+      - proxy
+      - proxy_http
+      - proxy_fcgi
+      - rewrite
+      - ssl
+    php_versions:
+      - 5.6
+      - 7.3
+      - 7.4
+      - 8.2
+      - 8.3
+      - 8.4
+    vhosts:
+      - servername: portail.local
+        documentroot: /home/parallels/work/portail
+        template: php
+        version: 7.4
+      - servername: adminer.local
+        documentroot: /home/parallels/work/adminer
+        template: php
+        version: 7.3
+        extra: |
+          php_value upload_max_filesize 1G
+          php_value post_max_size 1G
+          php_value memory_limit 2G
+          php_value max_execution_time 120
+
+      - servername: block.local
+        documentroot: /home/parallels/work/block
+        template: php
+        version: 7.3
+
+
+      - servername: dimi.local
+        documentroot: /home/parallels/work/dimi
+        template: php
+        version: 7.3
+
+      - servername: gemini.local
+        documentroot: /home/parallels/work/google
+        template: php
+        version: 7.3
+
+      - servername: hugo.local
+        documentroot: /home/parallels/work/hugo
+        template: php
+        version: 7.3
+
+      - servername: invoice.local
+        documentroot: /home/parallels/work/invoice
+        template: php
+        version: 7.3
+
+      - servername: bernard.local
+        documentroot: /home/parallels/work/bernard
+        template: php
+        version: 7.4
+
+      - servername: portfolio.local
+        documentroot: /home/parallels/work/portfolio/Public
+        template: php
+        version: 7.4
+  tasks:
+    - name: install apache2
+      apt: name=apache2 state=present
+    - name: "apache run user"
+      lineinfile:
+        dest: "/etc/apache2/envvars"
+        regexp: "^export APACHE_RUN_USER="
+        line: "export APACHE_RUN_USER={{ apache_run_user }}"
+        state: present
+    - name: "apache run group"
+      lineinfile:
+        dest: "/etc/apache2/envvars"
+        regexp: "^export APACHE_RUN_GROUP="
+        line: "export APACHE_RUN_GROUP={{ apache_run_group }}"
+        state: present
+    - name: "fpm run user"
+      lineinfile:
+        dest: "/etc/php/{{item}}/fpm/pool.d/www.conf"
+        regexp: "^;?user ="
+        line: "user = {{ apache_run_user }}"
+        state: present
+      with_items: "{{php_versions}}"
+    - name: "fpm run group"
+      lineinfile:
+        dest: "/etc/php/{{item}}/fpm/pool.d/www.conf"
+        regexp: "^;?group ="
+        line: "group = {{ apache_run_group }}"
+        state: present
+      with_items: "{{php_versions}}"
+      notify:
+        - restart fpm
+    - name: "fpm listen owner"
+      lineinfile:
+        dest: "/etc/php/{{item}}/fpm/pool.d/www.conf"
+        regexp: "^listen.owner ="
+        line: "listen.owner = {{ apache_run_user }}"
+        state: present
+      with_items: "{{php_versions}}"
+    - name: "fpm listen group"
+      lineinfile:
+        dest: "/etc/php/{{item}}/fpm/pool.d/www.conf"
+        regexp: "^listen.group ="
+        line: "listen.group = {{ apache_run_group }}"
+        state: present
+      with_items: "{{php_versions}}"
+      notify:
+        - restart fpm
+    - name: enabled {{item}}
+      apache2_module: name={{item}} state=present
+      with_items: "{{modules}}"
+      notify:
+        - restart apache2
+    - name: configured vhosts
+      template:
+        src: vhost.{{item.template}}.conf.j2
+        dest: /etc/apache2/sites-available/{{item.servername}}.conf
+      with_items: "{{vhosts}}"
+    - name: configured hosts
+      lineinfile:
+        dest: /etc/hosts
+        line: "127.0.0.1 {{ item.servername }}"
+        state: present
+      with_items: "{{vhosts}}"
+    - name: a2ensite {{ item.servername }}
+      command: a2ensite {{ item.servername }}
+      with_items: "{{vhosts}}"
+      notify:
+        - restart apache2
+        - restart fpm
+  handlers:
+    - name: restart apache2
+      service: name=apache2 state=restarted
+    - name: restart fpm
+      service: name=php{{item}}-fpm state=restarted
+      with_items: "{{php_versions}}"

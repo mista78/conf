@@ -1,0 +1,21 @@
+- hosts: localhost
+  become: yes
+
+  tasks:
+    - name: Install MariaDB Server
+      apt: name=mariadb-server state=latest
+        
+    - name: Install MariaDB Client
+      apt: name=mariadb-client state=latest
+
+    - name: sql mode
+      lineinfile:
+        path: /etc/mysql/my.cnf
+        line: sql_mode = "NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION" 
+        insertafter: [mysqld]
+      notify:
+        - restart mariadb
+
+  handlers:
+    - name: restart mariadb
+      service: name=mariadb state=restarted
