@@ -217,5 +217,5 @@ title_align center
 gaps inner 6
 smart_borders on
 smart_gaps off
-
+exec_always --no-startup-id "setxkbmap fr mac"
 exec_always --no-startup-id "/home/$USERNAME/conf/launch_poly.sh"
