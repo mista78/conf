@@ -1,4 +1,5 @@
 #!/bin/sh
+setxkbmap fr mac
 imagepath="$HOME/Images/bing-wallpaper.jpg"
 urlpath=$( \
 sleep 2

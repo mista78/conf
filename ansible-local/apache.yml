@@ -1,8 +1,8 @@
 - hosts: localhost
   become: yes
   vars:
-    apache_run_user: parallels
-    apache_run_group: parallels
+    apache_run_user: mista78
+    apache_run_group: mista78
     modules:
       - headers
       - proxy
@@ -19,11 +19,11 @@
       - 8.4
     vhosts:
       - servername: portail.local
-        documentroot: /home/parallels/work/portail
+        documentroot: /home/mista78/work/portail
         template: php
         version: 7.4
       - servername: adminer.local
-        documentroot: /home/parallels/work/adminer
+        documentroot: /home/mista78/work/adminer
         template: php
         version: 7.3
         extra: |
@@ -33,38 +33,38 @@
           php_value max_execution_time 120
 
       - servername: block.local
-        documentroot: /home/parallels/work/block
+        documentroot: /home/mista78/work/block
         template: php
         version: 7.3
 
 
       - servername: dimi.local
-        documentroot: /home/parallels/work/dimi
+        documentroot: /home/mista78/work/dimi
         template: php
         version: 7.3
 
       - servername: gemini.local
-        documentroot: /home/parallels/work/google
+        documentroot: /home/mista78/work/google
         template: php
         version: 7.3
 
       - servername: hugo.local
-        documentroot: /home/parallels/work/hugo
+        documentroot: /home/mista78/work/hugo
         template: php
         version: 7.3
 
       - servername: invoice.local
-        documentroot: /home/parallels/work/invoice
+        documentroot: /home/mista78/work/invoice
         template: php
         version: 7.3
 
       - servername: bernard.local
-        documentroot: /home/parallels/work/bernard
+        documentroot: /home/mista78/work/bernard
         template: php
         version: 7.4
 
       - servername: portfolio.local
-        documentroot: /home/parallels/work/portfolio/Public
+        documentroot: /home/mista78/work/portfolio/Public
         template: php
         version: 7.4
   tasks:

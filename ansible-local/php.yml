@@ -48,16 +48,16 @@
       apt: name=php{{item}} state=present
       with_items: "{{php_versions}}"
 
-    # - name: Install extensions
-    #   apt:
-    #     state: present
-    #     update_cache: yes
-    #     pkg: "php{{item[0]}}-{{item[1]}}"
-    #   with_nested: 
-    #     - "{{php_versions}}"
-    #     - "{{extensions}}"
-    #   notify:
-    #     - restart fpm
+    - name: Install extensions
+      apt:
+        state: present
+        update_cache: yes
+        pkg: "php{{item[0]}}-{{item[1]}}"
+      with_nested: 
+        - "{{php_versions}}"
+        - "{{extensions}}"
+      notify:
+        - restart fpm
 
         #    - name: "Composer Global Packages"
         #      become: no
